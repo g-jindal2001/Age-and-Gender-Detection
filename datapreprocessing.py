@@ -152,7 +152,7 @@ class DataPreProcessing:
             self.classes_df.loc[i, 'No. of images'] = class_images
             self.classes_df.loc[i, 'Class balance (%)'] = round((class_images / sum(series)) * 100, 2)
 
-        return self.classes_df
+        print(self.classes_df)
 
     def merge_images(self, new_path):
         self.new_path = new_path
@@ -199,19 +199,4 @@ class DataPreProcessing:
             shutil.copy(img_src, img_dest)
 
         print("Done merging images from both datasets into directory.")
-
-    def get_all_file_paths(self):
-        file_paths = []
-
-        for root, dirs, files in os.walk(r"C:\Users\gjadd\Downloads\ZIPPED_DATASETS-20220704T123949Z-002\ZIPPED_DATASETS\combined_faces\content\combined_faces"):# replace with self.new_path while use in production
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                file_paths.append(filepath)
-
-        return file_paths
-
-    def display(self):
-        print(sum(self.combined_images.values()))
-        print(self.images_df.shape)
-        print(self.classes_df.shape)
 
