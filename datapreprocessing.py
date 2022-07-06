@@ -29,6 +29,7 @@ class DataPreProcessing:
         self.unique_ages = set()
         self.images_df = None
         self.classes_df = None
+        self.new_path = None
 
     def unique_ages_combined(self):
         self.facial_age_folder = os.listdir(self.facial_age_path)
@@ -76,7 +77,7 @@ class DataPreProcessing:
             # Summing up the no. of images for the age label.
             self.combined_images[age] = fc_image + utk_image
 
-    def generate_df(self):
+    def no_of_images_for_every_age(self):
         self.images_df = pd.DataFrame(self.combined_images.values(), index=self.combined_images.keys(), columns=['combined_images'])
         self.images_df['facial_age_images'] = pd.Series(self.facial_age_images)
         self.images_df['utkface_images'] = pd.Series(self.utk_face_images)
@@ -154,9 +155,10 @@ class DataPreProcessing:
         return self.classes_df
 
     def merge_images(self, new_path):
-        isExist = os.path.exists(new_path)
+        self.new_path = new_path
+        isExist = os.path.exists(self.new_path)
         if not isExist:
-            os.makedirs(new_path)
+            os.makedirs(self.new_path)
 
         age_file_counter = [1] * 117
 
@@ -174,7 +176,7 @@ class DataPreProcessing:
                 new_filename = str(int(age)) + "_" + str(age_file_counter[int(age)]) + ".jpg"
                 age_file_counter[int(age)] += 1
 
-                img_dest = os.path.join(new_path, new_filename)
+                img_dest = os.path.join(self.new_path, new_filename)
 
                 # Converting the .PNG images to .JPG so as to maintain consistency with of filetype throughout the combined datasets.
                 png_image = cv2.imread(img_src)
@@ -192,11 +194,21 @@ class DataPreProcessing:
             new_filename = age + "_" + str(age_file_counter[int(age)]) + "." + file_type
             age_file_counter[int(age)] += 1
 
-            img_dest = os.path.join(new_path, new_filename)
+            img_dest = os.path.join(self.new_path, new_filename)
 
             shutil.copy(img_src, img_dest)
 
         print("Done merging images from both datasets into directory.")
+
+    def get_all_file_paths(self):
+        file_paths = []
+
+        for root, dirs, files in os.walk(r"C:\Users\gjadd\Downloads\ZIPPED_DATASETS-20220704T123949Z-002\ZIPPED_DATASETS\combined_faces\content\combined_faces"):# replace with self.new_path while use in production
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                file_paths.append(filepath)
+
+        return file_paths
 
     def display(self):
         print(sum(self.combined_images.values()))
