@@ -4,7 +4,6 @@ import numpy as np
 
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
-from PIL import Image
 
 import tensorflow as tf
 
@@ -28,6 +27,7 @@ def _parse_function(filename, label):#convert file names to actual tensors(numpy
     image_string = tf.io.read_file(filename)
     image_decoded = tf.io.decode_jpeg(image_string, channels=1)    # channels=1 to convert to grayscale, channels=3 to convert to RGB.
     # image_resized = tf.image.resize(image_decoded, [200, 200])
+    image_decoded = tf.cast(image_decoded, tf.float32)
     label = tf.one_hot(label, 7)
 
     return image_decoded, label
@@ -50,7 +50,7 @@ class TrainTestSplit:
         #print(master_df.head())
         self.master_df = master_df
 
-    def train_test_split(self, test_size=0.3):
+    def train_test_split(self, test_size=0.3, batch_size=512):
         X = self.master_df[['filename', 'age']]
         y = self.master_df['target']
 
@@ -62,14 +62,18 @@ class TrainTestSplit:
         test_labels_tensor = tf.constant(list(y_test))
 
         train_dataset = tf.data.Dataset.from_tensor_slices((train_filenames_tensor, train_labels_tensor))
+        #print(train_dataset)
         train_dataset = train_dataset.map(_parse_function)
+        #print(train_dataset)
         train_dataset = train_dataset.repeat(3)
-        train_dataset = train_dataset.batch(512)
+        #print(train_dataset)
+        train_dataset = train_dataset.batch(batch_size)
+        #print(train_dataset)
 
         test_dataset = tf.data.Dataset.from_tensor_slices((test_filenames_tensor, test_labels_tensor))
         test_dataset = test_dataset.map(_parse_function)
         test_dataset = test_dataset.repeat(3)
-        test_dataset = test_dataset.batch(512)
+        test_dataset = test_dataset.batch(batch_size)
 
         return (train_dataset, test_dataset)
 

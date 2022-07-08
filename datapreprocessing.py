@@ -102,10 +102,10 @@ class DataPreProcessing:
         series = self.images_df['combined_images']
         n_images = int(sum(series) / n_classes)
 
-        print(f"Total no. of images in dataset\t= {sum(series)}")
-        print(f"No. of classes desired\t\t= {n_classes}")
-        print(f"Target no. of images per class\t>= {sum(series)}/{n_classes} = ~{n_images}")
-        print()
+        #print(f"Total no. of images in dataset\t= {sum(series)}")
+        #print(f"No. of classes desired\t\t= {n_classes}")
+        #print(f"Target no. of images per class\t>= {sum(series)}/{n_classes} = ~{n_images}")
+        #print()
 
         self.classes_df = pd.DataFrame(columns=['Age-ranges (classes)', 'No. of images', 'Class balance (%)'])
         age_index = 0
