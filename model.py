@@ -1,55 +1,56 @@
-import tensorflow as tf
-from tensorflow.python.keras.layers import Conv2D, Activation, Dense, MaxPool2D, GlobalAveragePooling2D, Flatten
+from tensorflow.python.keras.layers import Conv2D, Activation, Dense, MaxPool2D, Flatten, Input, Dropout
+from tensorflow.python.keras.models import Model
 
-class AgeDetector(tf.keras.Model):
-    def __init__(self):
-        super(AgeDetector, self).__init__()
-
-        self.conv1 = Conv2D(filters=8, kernel_size=3)
-        self.actv1 = Activation("relu")
-        self.conv2 = Conv2D(filters=16, kernel_size=3)
-        self.actv2 = Activation("relu")
-        self.conv3= Conv2D(filters=32, kernel_size=3)
-        self.actv3 = Activation("relu")
-        self.pool1 = MaxPool2D(pool_size=(2,2))
-
-        self.conv4 = Conv2D(filters=32, kernel_size=3)
-        self.actv4 = Activation("relu")
-        self.pool2 = MaxPool2D(pool_size=(2,2))
-
-        self.conv5 = Conv2D(filters=64, kernel_size=3)
-        self.actv5 = Activation("relu")
-        self.pool3 = MaxPool2D(pool_size=(2,2))
-
-        self.flatten = GlobalAveragePooling2D()
-        self.dense1 = Dense(20)
-        self.actv6 = Activation("relu")
-        self.dense2 = Dense(7)
-        self.actv7 = Activation("softmax")
-
-    def call(self, inputs):
-        x = self.conv1(inputs)
-        x = self.actv1(x)
-        x = self.conv2(x)
-        x = self.actv2(x)
-        x = self.conv3(x)
-        x = self.actv3(x)
-        x = self.pool1(x)
-
-        x = self.conv4(x)
-        x = self.actv4(x)
-        x = self.pool2(x)
-
-        x = self.conv5(x)
-        x = self.actv5(x)
-        x = self.pool3(x)
-    
-        print(x)
-        x = self.flatten(x)
-        x = self.dense1(x)
-        x = self.actv6(x)
-        x = self.dense2(x)
-        x = self.actv7(x)
+class AgeDetector():
+    def hidden_layers(self,inputs):
+        x = Conv2D(16, (3, 3), padding="same")(inputs)
+        x = Activation("relu")(x)
+        x = MaxPool2D(pool_size=(3, 3))(x)
+        x = Dropout(0.25)(x)
+        x = Conv2D(32, (3, 3), padding="same")(x)
+        x = Activation("relu")(x)
+        x = MaxPool2D(pool_size=(2, 2))(x)
+        x = Dropout(0.25)(x)
+        x = Conv2D(32, (3, 3), padding="same")(x)
+        x = Activation("relu")(x)
+        x = MaxPool2D(pool_size=(2, 2))(x)
+        x = Dropout(0.25)(x)
 
         return x
+
+    def age_branch(self, inputs, n_classes=7):
+
+        x = self.hidden_layers(inputs)
+
+        x = Flatten()(x)
+        x = Dense(20)(x)
+        x = Activation("relu")(x)
+        x = Dense(n_classes)(x)
+        x = Activation("softmax", name="age_branch_1")(x)
+
+        return x
+
+    def age_branch_2(self, inputs, n_classes=2):
+
+        x = self.hidden_layers(inputs)
+        
+        x = Flatten()(x)
+        x = Dense(20)(x)
+        x = Activation("relu")(x)
+        x = Dense(n_classes)(x)
+        x = Activation("softmax", name="age_branch_2")(x)
+
+        return x
+
+    def assemble_model(self, input_shape):
+
+        inputs = Input(shape = input_shape)
+        age_branch_1 = self.age_branch(inputs)
+        age_branch_2 = self.age_branch_2(inputs)
+
+        model = Model(inputs=inputs,
+                      outputs = [age_branch_1, age_branch_2],
+                      name="face_net")
+
+        return model
 
