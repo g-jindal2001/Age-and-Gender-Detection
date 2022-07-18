@@ -19,36 +19,36 @@ master_df = data_preprocess.generate_df()
 print(master_df.head())
 
 data_gen = DataGen(df = master_df) 
-train_idx, valid_idx = data_gen.generate_split_indexes()
-print(train_idx)
-print(valid_idx)
+#train_idx, valid_idx = data_gen.generate_split_indexes()
 
 classifier = AgeDetector().assemble_model(input_shape=(200, 200, 1))
 
 classifier.compile(loss={
-                        'age_branch_1': 'categorical_crossentropy',
-                        'age_branch_2': 'categorical_crossentropy',
+                        'age_output': 'categorical_crossentropy',
+                        'gender_output': 'categorical_crossentropy',
                     }, 
                     optimizer='adam',
-                    loss_weights={
-                        'age_branch_1': 2, 
-                        'age_branch_2': 1,
-                    },
+                    # loss_weights={
+                    #     'age_output': 2, 
+                    #     'gender_output': 1,
+                    # },
                     metrics={
-                        'age_branch_1': 'accuracy',
-                        'age_branch_2': 'accuracy',
+                        'age_output': 'accuracy',
+                        'gender_output': 'accuracy',
                     })
 
 # early_stop = EarlyStopping(monitor='val_loss', min_delta=0, patience=3, verbose=1, mode='auto')
 
-train_dataset = data_gen.generate_images(image_idx = train_idx, is_training = True, batch_size = 8)
-valid_dataset = data_gen.generate_images(image_idx = valid_idx, is_training = True, batch_size = 8)
+#train_dataset = data_gen.generate_images(image_idx = train_idx, is_training = True, batch_size = 8)
+#valid_dataset = data_gen.generate_images(image_idx = valid_idx, is_training = True, batch_size = 8)
+
+train_dataset, valid_dataset = data_gen.train_test_split(test_size = 0.3, batch_size = 8)
 
 classifier_history = classifier.fit(train_dataset,
-                        steps_per_epoch=len(train_idx)//8,
+                        #steps_per_epoch=len(train_idx)//8,
                         validation_data=valid_dataset,
-                        validation_steps=len(valid_idx)//8,
+                        #validation_steps=len(valid_idx)//8,
                         epochs=10,
                         #callbacks=[early_stop],
-                        shuffle=False    # shuffle=False to reduce randomness and increase reproducibility
+                        #shuffle=False    # shuffle=False to reduce randomness and increase reproducibility
                        )

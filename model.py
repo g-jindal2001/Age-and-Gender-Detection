@@ -26,7 +26,7 @@ class AgeDetector():
         x = Dense(20)(x)
         x = Activation("relu")(x)
         x = Dense(n_classes)(x)
-        x = Activation("softmax", name="age_branch_1")(x)
+        x = Activation("softmax", name="age_output")(x)
 
         return x
 
@@ -38,13 +38,13 @@ class AgeDetector():
         x = Dense(20)(x)
         x = Activation("relu")(x)
         x = Dense(n_classes)(x)
-        x = Activation("softmax", name="age_branch_2")(x)
+        x = Activation("softmax", name="gender_output")(x)
 
         return x
 
     def assemble_model(self, input_shape):
 
-        inputs = Input(shape = input_shape)
+        inputs = Input(shape = input_shape, name = "img_input")
         age_branch_1 = self.age_branch(inputs)
         age_branch_2 = self.age_branch_2(inputs)
 
